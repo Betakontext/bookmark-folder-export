@@ -1,4 +1,4 @@
-// background.js – Bookmark Folder Export (v1.1.0)
+// background.js – Bookmark Folder Export
 //
 // Right-click a bookmark folder → export as .md / .html / .txt / .zip
 // No external dependencies, no network requests, no data collection.
@@ -36,7 +36,7 @@ browser.contextMenus.onClicked.addListener(async (info) => {
         : `# ${title}\n\n- [${title}](${root.url})\n`;
 
     const ext = fmt === "html" ? "html" : fmt === "txt" ? "txt" : "md";
-    await download(content, `${sanitize(root.title)}.${ext}`, "text/plain");
+    await download(content, `${sanitize(root.title)}.${ext}`, "application/octet-stream");
     return;
   }
 
@@ -50,9 +50,13 @@ browser.contextMenus.onClicked.addListener(async (info) => {
     const zipBlob = createZip(files);
     await downloadBlob(zipBlob, `${sanitize(root.title)}_bookmarks.zip`);
   } else {
-    const renderers = { md: renderMarkdown, html: () => renderNetscapeHTML(root, root.title), txt: renderTxt };
+    const renderers = {
+      md:   () => renderMarkdown(root),
+      html: () => renderNetscapeHTML(root, root.title),
+      txt:  () => renderTxt(root)
+    };
     const ext = fmt === "html" ? "html" : fmt;
-    const mime = fmt === "html" ? "text/html" : "text/plain";
+    const mime = fmt === "html" ? "text/html" : "application/octet-stream";
     await download(renderers[fmt](), `${sanitize(root.title)}_bookmarks.${ext}`, mime);
   }
 });
@@ -226,12 +230,20 @@ function esc(s) {
 }
 
 async function download(content, filename, mime) {
-  const blob = new Blob([content], { type: mime || "text/plain" });
+  const blob = new Blob([content], { type: "text/html" });
   await downloadBlob(blob, filename);
 }
 
 async function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
-  await browser.downloads.download({ url, filename, saveAs: true });
-  URL.revokeObjectURL(url);
+  const downloadId = await browser.downloads.download({ url, filename, saveAs: true });
+
+  const cleanup = (delta) => {
+    if (delta.id !== downloadId || !delta.state) return;
+    if (delta.state.current === "complete" || delta.state.current === "interrupted") {
+      browser.downloads.onChanged.removeListener(cleanup);
+      URL.revokeObjectURL(url);
+    }
+  };
+  browser.downloads.onChanged.addListener(cleanup);
 }
