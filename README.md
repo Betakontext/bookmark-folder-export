@@ -1,4 +1,4 @@
-# 🔖 Firefox Bookmark Export → Markdown / HTML / TXT / ZIP
+# 🔖 Bookmark folder export → Markdown / HTML / TXT / ZIP
 
 Export a single Firefox bookmark folder (recursively) as `.md`, `.html`, `.txt` or `.zip`.
 
