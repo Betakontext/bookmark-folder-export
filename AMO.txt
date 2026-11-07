@@ -1,0 +1,127 @@
+AMO = addons.mozilla.org – Mozillas offizieller Add-on-Store (analog zu Chrome Web Store, aber für Firefox).
+
+Submission = der Vorgang, dein Add-on dort einzureichen, damit es öffentlich verfügbar (oder zumindest signiert) wird.
+
+Ablauf in Kürze
+Account anlegen auf addons.mozilla.org (kostenlos)
+Add-on als .zip packen (manifest.json in der Root)
+Developer Hub → Submit a New Add-on
+Metadaten ausfüllen: Name, Beschreibung, Screenshot, Lizenz, Kategorie
+Listing-Typ wählen:
+Listed → öffentlich sichtbar im Store
+Unlisted → nur über direkte URL erreichbar
+Self-distributed → nur signiert, nicht auf AMO
+Submit → automatische Prüfung (Lint, Security) → ggf. manueller Review
+Mozilla signiert das Add-on → danach ist es installierbar
+Warum Signierung nötig ist
+Firefox akzeptiert seit Version 48 nur signierte Add-ons im Release-Kanal. Ohne Signierung geht es nur im Nightly oder Developer Edition (mit xpinstall.signatures.required = false).
+
+Review-Dauer
+Automatische Prüfung: Minuten
+Manueller Review (bei Listed): 3 Tage bis 3 Wochen
+Bei Unlisted / Self-distributed: oft nur die automatische Prüfung
+Kosten
+Keine. Die Submission ist kostenlos, auch für kommerzielle Add-ons.
+
+
+
+Empfohlener Weg
+GitHub + AMO (Listed) – beides zusammen:
+
+Rolle	Wo
+Quellcode, README, Issues, Stars	GitHub
+Signierung, Distribution, Updates, Entdeckung	AMO (Listed)
+
+GitHub ist nicht der Vertriebskanal – Firefox installiert nur signierte .xpi-Dateien, und die kommen von AMO. GitHub ist aber der natürliche Ort für:
+
+Open-Source-Code (Transparenz → schnellerer Review)
+Issue-Tracking & Feature Requests
+CI (z. B. web-ext lint bei jedem Push)
+Konkrete Schritte für dich
+GitHub-Repo anlegen – bookmark-md/ als Subordner, firefox_folder_export.py daneben, README wie oben.
+AMO-Account anlegen (Mozilla Account, kostenlos).
+ZIP bauen – manifest.json muss in der Root des Archivs liegen:
+cd bookmark-md
+zip -r ../bookmark-md.zip . -x "*.DS_Store"
+
+Dein Add-on ist klein und unverminifiziert → kein Source-Code-Paket nötig.
+Developer Hub → Submit a New Add-on → Listed on AMO wählen.
+Metadaten:
+Name: Bookmark Folder Export
+Summary: „Export a bookmark folder as Markdown, HTML, TXT or ZIP – right-click & go."
+Lizenz: MIT
+Kategorie: Bookmarks
+Screenshot: Rechtsklick-Menü im Bookmarks Manager
+Privacy Policy: nicht nötig (du sammelst nichts)
+Notes for Reviewers: „No external requests, no data collection. All processing is local."
+Submit → automatische Prüfung (Minuten) → ggf. manueller Review (3 Tage – 3 Wochen).
+Später: Updates automatisieren
+Sobald du Versionen pushen willst, kannst du per GitHub Actions web-ext sign nutzen:
+
+# .github/workflows/publish.yml
+name: Publish to AMO
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  sign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i -g web-ext
+      - run: |
+          web-ext sign \
+            --api-key "${{ secrets.AMO_API_KEY }}" \
+            --api-secret "${{ secrets.AMO_API_SECRET }}" \
+            --channel listed \
+            --source-dir bookmark-md
+
+API-Key & Secret: AMO → My Add-ons → API Keys → generieren. In GitHub als Repository Secrets speichern.
+
+Kurzfazit
+Frage	Antwort
+GitHub gut?	Ja – für Code, Issues, CI. Nicht für Distribution.
+AMO Listed vs. Self-distributed?	Listed – kostenlos, signiert, in Firefox sichtbar, Auto-Updates.
+Source-Code-Upload nötig?	Nein – dein Code ist klein und lesbar.
+Kosten?	0 €
+Review-Dauer?	Oft sofort nach Auto-Check; worst case 3 Wochen.
+
+
+Kanäle mit hoher Trefferquote
+Top-Empfehlungen (Nische passt perfekt)
+Kanal	Warum
+r/firefox	Zielgruppe 1:1 – „Export my bookmarks as Markdown" ist ein wiederkehrender Wunsch
+r/LocalLLaMA / r/ChatGPT	Markdown-Export für AI-Chat ist ein Killer-Use-Case – „feed your bookmarks into an LLM"
+lobste.rs	Tech-Community, liebt kleine CLI-/Browser-Tools, hoher Anteil an Firefox-Nutzern
+Hacker News (Show HN)	„I built a right-click export for Firefox bookmarks" – gute Chance auf Top-10
+r/productivity	Bookmark-Organisation ist ein Dauerthema
+
+Gut geeignet
+Kanal	Anmerkung
+Dev.to / Hashnode	Kurzer Blogpost „How I exported my 2000 bookmarks into an AI prompt" – SEO + Community
+Mozilla Developer Forum	Offiziell, wenig Konkurrenz, gute Sichtbarkeit bei Firefox-Entwicklern
+r/selfhosted	Viele dort nutzen Obsidian/Logseq → Markdown-Export ist relevant
+X/Twitter	Kurzes Video (10 s) vom Rechtsklick-Menü + Link – „built this in a weekend"
+Indie Hackers	Wenn du den AMO-Release als Milestone teilst
+
+Deutschsprachig
+Kanal	Anmerkung
+r/Deutschland	„Ich habe ein kleines Firefox-Add-on gebaut" – funktioniert gut
+Hackaday (Forum)	Deutschsprachige Maker-Community
+IT-Basis / golem.de	Eher für größere Releases, aber ein kurzes „Mein Projekt"-Post im Forum kann helfen
+
+SEO / Langfristig
+GitHub mit gutem README + Topics (firefox, bookmarks, markdown, export, ai) → Google-Ranking für „firefox bookmarks export markdown"
+AMO-Listing selbst rankt für „bookmark export add-on firefox"
+Product Hunt – einmalig, aber bringt Traffic + Social Proof
+Konkrete Reihenfolge
+GitHub-Repo pushen (mit README + Shields)
+AMO-Submit → Listing live
+r/firefox + lobste.rs Post (gleicher Tag)
+Show HN (24–48 h später, wenn AMO-Review durch ist)
+r/LocalLLaMA mit Fokus auf AI-Use-Case
+Dev.to-Post mit Screenshot + 2-Minuten-Video
+Tipp: Der AI-Chat-Winkel ist dein stärkstes Marketing-Argument. „Paste your entire bookmark folder into Claude/ChatGPT as structured context" – das ist ein konkretes Problem, das viele haben.
