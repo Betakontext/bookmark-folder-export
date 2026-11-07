@@ -14,7 +14,7 @@ Export a single Firefox bookmark folder (recursively) as `.md`, `.html`, `.txt` 
 | `firefox_folder_export.py` | CLI – scripting, automation |
 | `bookmark-md/` | Browser add-on – right-click & go |
 
-[Add-on auf AMO](https://addons.mozilla.org/en-US/firefox/addon/bookmark-folder-export/)]
+[Link to addons.mozilla.org](https://addons.mozilla.org/en-US/firefox/addon/bookmark-folder-export/)
 ---
 
 ## Python Script
