@@ -19,5 +19,13 @@ desktop.ini
 .idea/
 *.swp
 
+
+# Planing files and outputs
 *.txt
 output/
+
+# Build artifacts
+*.zip
+
+# Design sources (top-level only, NOT bookmark-md/icons/)
+/icons/
