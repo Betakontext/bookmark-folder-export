@@ -1,0 +1,69 @@
+1. Verzeichnis anlegen
+mkdir -p bookmark-md/icons
+
+Endstruktur (exakt diese 5 Dateien, nichts anderes):
+
+bookmark-md/
+├── manifest.json
+├── background.js
+└── icons/
+    ├── icon-48.png
+    └── icon-96.png
+
+manifest.json → der Code, den du oben gepostet hast
+background.js → dein Code
+icons/ → zwei PNGs (48×48 und 96×96), die du noch generieren musst
+Icons schnell generieren (z. B. aus einem 96×96-Original):
+
+# mit ImageMagick
+convert icon-96.png -resize 48x48 icon-48.png
+
+oder online: pngmini.com / squoosh.app
+
+2. Lint (vor dem ZIP)
+cd bookmark-md/
+npx web-ext lint --source-dir .
+
+Müssen 0 errors sein. Warnings sind okay (z. B. „no description in 100+ chars" – ignoriert).
+Wenn Fehler kommen → fixen → nochmal lint.
+Erst wenn grün: weiter.
+3. ZIP bauen
+cd bookmark-md/
+zip -r ../bookmark-folder-export-1.1.0.zip . -x "*.DS_Store"
+
+Wichtig: manifest.json muss in der Root der ZIP liegen, nicht in bookmark-md/manifest.json. Das -r . (Punkt) sorgt dafür.
+
+Verifizieren:
+
+unzip -l ../bookmark-folder-export-1.1.0.zip
+
+Erwartete Ausgabe:
+
+manifest.json
+background.js
+icons/
+icons/icon-48.png
+icons/icon-96.png
+
+4. Upload auf AMO
+addons.mozilla.org → Login (Mozilla Account)
+Developer Hub → Submit a New Add-on
+ZIP uploaden → bookmark-folder-export-1.1.0.zip
+Listing-Typ: Listed on AMO
+Metadaten ausfüllen:
+Feld	Wert
+Name	Bookmark Folder Export
+Summary	Export a bookmark folder as Markdown, HTML, TXT or ZIP – right-click & go.
+Description	(länger, 2–3 Sätze + Use-Case LLM)
+Lizenz	MIT
+Kategorie	Bookmarks
+Screenshot	1280×800, Rechtsklick-Menü im Bookmarks Manager
+Privacy Policy	leer (du sammelst nichts)
+Notes for Reviewers	No external requests, no data collection. All processing is local.
+
+Submit → Auto-Check (Minuten) → ggf. manueller Review
+5. Nach dem Review
+Listing ist live → URL notieren
+GitHub-Repo pushen (gleiche Struktur, bookmark-md/ als Subordner)
+homepage_url in manifest.json muss dann erreichbar sein (für v1.2.0 einbauen, oder jetzt schon wenn das Repo schon da ist)
+Kurz: 5 Dateien in bookmark-md/ → web-ext lint → zip -r . → AMO Developer Hub → ZIP hochladen → Submit.

@@ -3,7 +3,8 @@
 // Right-click a bookmark folder → export as .md / .html / .txt / .zip
 // No external dependencies, no network requests, no data collection.
 //
-// Repo: https://github.com/USER/bookmark-folder-export
+// Contact: dev@betakontext.de
+// Repo: https://github.com/betakontext/bookmark-folder-export
 // License: MIT
 
 // ─── Context Menu ──────────────────────────────────────────────────────────
